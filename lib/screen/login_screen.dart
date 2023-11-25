@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:weather_app/screen/signup_screen.dart';
 import '/utils/text_utils.dart';
 import 'package:weather_app/widgets/custom_text_field.dart';
@@ -31,14 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          print('on pressed');
-          final position = await Geolocator.getCurrentPosition();
-          print('lat : ${position.latitude} lon : ${position.longitude}');
-        },
-      ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Form(
           key: _formKey,
