@@ -1,16 +1,19 @@
 class TextUtils {
   TextUtils._();
 
-  static bool isEmpty(String? str) {
-    return str != null && str.isEmpty;
+  static String? validatePassword(String? str) {
+    return str != null && str.isNotEmpty ? null : 'Please enter Password';
   }
 
-  static bool isNotEmpty(String? str) {
-    return str != null && str.isNotEmpty;
+  static String? validateConfirmPassword(
+      String password, String confirmPassword) {
+    return password != confirmPassword ? 'Password didn\'t match' : null;
   }
 
-  static bool isValidEmail(String email) {
+  static String? validateEmail(String? email) {
     final RegExp pattern = RegExp('^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+\$');
-    return email.isNotEmpty && pattern.hasMatch(email);
+    return email != null && pattern.hasMatch(email)
+        ? null
+        : 'Please Enter Valid Email';
   }
 }

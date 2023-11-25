@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:weather_app/manager/firebase_manager.dart';
 import 'package:weather_app/screen/home_screen.dart';
 import 'package:weather_app/screen/login_screen.dart';
+import '/utils/text_utils.dart';
 import 'package:weather_app/widgets/custom_text_field.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -19,6 +20,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
@@ -30,47 +32,58 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CustomTextField(
-                controller: _emailController, hintText: 'Enter your Email'),
-            const SizedBox(height: 20),
-            CustomTextField(
-                controller: _passwordController,
-                hintText: 'Enter your password'),
-            const SizedBox(height: 20),
-            CustomTextField(
-                controller: _confirmPasswordController,
-                hintText: 'Re-enter password'),
-            const SizedBox(height: 30),
-            TextButton(
-              onPressed: _onSignUp,
-              style: TextButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                  backgroundColor: Colors.yellow,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10))),
-              child: const Text('Submit'),
-            ),
-            const SizedBox(height: 30),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text("Already have an account "),
-                InkWell(
-                  onTap: _loginButtonClick,
-                  child: const Text(
-                    'Login',
-                    style: TextStyle(decoration: TextDecoration.underline),
-                  ),
-                )
-              ],
-            )
-          ],
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CustomTextField(
+                  validator: TextUtils.validateEmail,
+                  controller: _emailController,
+                  hintText: 'Enter your Email'),
+              const SizedBox(height: 20),
+              CustomTextField(
+                  validator: TextUtils.validatePassword,
+                  controller: _passwordController,
+                  hintText: 'Enter your password'),
+              const SizedBox(height: 20),
+              CustomTextField(
+                  validator: (text) =>
+                      TextUtils.validatePassword(text) ??
+                      TextUtils.validateConfirmPassword(
+                          _passwordController.text,
+                          _confirmPasswordController.text),
+                  controller: _confirmPasswordController,
+                  hintText: 'Re-enter password'),
+              const SizedBox(height: 30),
+              TextButton(
+                onPressed: _onSignUp,
+                style: TextButton.styleFrom(
+                    minimumSize: const Size.fromHeight(50),
+                    backgroundColor: Colors.yellow,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10))),
+                child: const Text('Submit'),
+              ),
+              const SizedBox(height: 30),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("Already have an account "),
+                  InkWell(
+                    onTap: _loginButtonClick,
+                    child: const Text(
+                      'Login',
+                      style: TextStyle(decoration: TextDecoration.underline),
+                    ),
+                  )
+                ],
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -82,19 +95,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
         builder: (_) => const Center(child: CircularProgressIndicator()));
   }
 
-//todo use validator here
   void _onSignUp() {
-    _showSnackBar();
-    FirebaseManager.signupWithEmail(
-            _emailController.text, _passwordController.text)
-        .then((value) {
-      Navigator.pop(context);
-      Navigator.pushReplacementNamed(context, HomeScreen.routeName);
-    }).onError<FirebaseException>((error, stackTrace) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Something went Wrong : ${error.message}')));
-    });
+    if (_formKey.currentState!.validate()) {
+      _showSnackBar();
+      FirebaseManager.signupWithEmail(
+              _emailController.text, _passwordController.text)
+          .then((value) {
+        Navigator.pop(context);
+        Navigator.pushReplacementNamed(context, HomeScreen.routeName);
+      }).onError<FirebaseException>((error, stackTrace) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Something went Wrong : ${error.message}')));
+      });
+    }
   }
 
   void _loginButtonClick() {
